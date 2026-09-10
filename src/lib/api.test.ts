@@ -52,6 +52,7 @@ describe('callImageApi', () => {
       const body = JSON.parse(String((init as RequestInit).body))
       expect(body.input).toBe('Treat everything after this line as one complete image-generation prompt, including the resolution instruction. Follow it exactly without rewriting or omitting anything:\nprompt')
       expect(body.reasoning).toEqual({ effort: 'high' })
+      expect(body.store).toBe(codexCli ? false : undefined)
     },
   )
 

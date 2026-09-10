@@ -258,6 +258,51 @@ VITE_DEFAULT_API_URL=https://api.openai.com/v1
 
 </details>
 
+### GitHub Pages 使用 Sub2API Codex
+
+Sub2API 的 Codex 配置使用 OpenAI Responses API。此项目已经兼容该请求格式，不需要把 Codex CLI 的 `auth.json` 上传到 GitHub；在页面的 API 配置中填写以下内容即可：
+
+| 配置项 | 值 |
+|------|------|
+| API 地址 | `https://你的-sub2api-域名/v1`，例如 `https://ai.asukaforever.com/v1` |
+| API 接口 | `Responses API (/v1/responses)` |
+| API Key | Sub2API 创建的 API Key，使用 `Bearer` 认证 |
+| 模型 ID | Sub2API 分组中可用的文本模型 |
+| 图像生成模型 | 该分组可用的 GPT Image 模型；不确定时留空使用网关默认值 |
+| Codex CLI 兼容模式 | 开启 |
+
+开启 Codex CLI 兼容模式后，Responses 请求会按 Sub2API/Codex 的约定发送，并关闭响应存储（`store: false`）。图片请求使用 `POST /v1/responses` 和 `image_generation` 工具；不要把 Codex 配置中的 `wire_api = "responses"` 改成 Images API。
+
+#### 解决 GitHub Pages 的 `OPTIONS 403`
+
+GitHub Pages 是静态站点，浏览器会先向 Sub2API 发送 CORS 预检请求。Sub2API 默认拒绝未配置的来源，因此必须在 Sub2API 的 `config.yaml` 中加入 GitHub Pages 的 **Origin**：
+
+```yaml
+cors:
+  allowed_origins:
+    - https://你的用户名.github.io
+    # 如果使用自定义域名，也加入完整协议和域名
+    # - https://img.example.com
+  allow_credentials: true
+```
+
+Origin 只包含协议、域名和端口，不包含仓库路径。例如页面地址是 `https://your-name.github.io/gpt_image_playground/`，配置仍然填写 `https://your-name.github.io`。修改后重启 Sub2API。不要在浏览器端额外添加 `x-openai-actor-authorization`，该头会增加预检要求，Sub2API 的 API Key 模式并不需要它。
+
+可以用下面的命令验证预检是否已经放行；返回 `204`，并且 `Access-Control-Allow-Origin` 等于页面 Origin，才说明 GitHub Pages 可以直接调用：
+
+```powershell
+curl.exe -i -X OPTIONS https://你的-sub2api-域名/v1/responses `
+  -H "Origin: https://你的用户名.github.io" `
+  -H "Access-Control-Request-Method: POST" `
+  -H "Access-Control-Request-Headers: authorization,content-type"
+```
+
+如果不能修改 Sub2API 的 CORS 配置，GitHub Pages 无法从前端绕过这个 403。此时请使用本地 Vite 代理、Docker/Nginx 同源代理，或把应用部署到你能控制代理配置的服务器。
+
+#### 安全提醒
+
+GitHub Pages 中的 API Key 必然会出现在浏览器请求里，并不能通过 GitHub Actions Secret 隐藏。不要把真实 Key 写入仓库文件、`VITE_DEFAULT_API_URL` 的公开 JSON 或分享链接；建议让每位用户在浏览器本地填写自己的 Key。需要服务端保密 Key 时，必须使用后端代理并限制访问来源。
+
 <details>
 <summary><strong>☁️ 方式三：Cloudflare Workers 部署</strong></summary>
 

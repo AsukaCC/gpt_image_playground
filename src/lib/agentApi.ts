@@ -623,6 +623,7 @@ export async function callAgentResponsesApi(opts: {
       tools: createAgentTools(params, profile, settings, maskDataUrl),
     }
     if (profile.reasoningEffort) body.reasoning = { effort: profile.reasoningEffort }
+    if (profile.codexCli) body.store = false
     if (profile.streamImages) {
       body.stream = true
     }
@@ -691,6 +692,7 @@ export async function callAgentConversationTitleApi(opts: {
       input: [{ role: 'user', content }],
     }
     if (profile.reasoningEffort) body.reasoning = { effort: profile.reasoningEffort }
+    if (profile.codexCli) body.store = false
 
     const response = await fetch(buildApiUrl(profile.baseUrl, 'responses', proxyConfig, useApiProxy), {
       method: 'POST',

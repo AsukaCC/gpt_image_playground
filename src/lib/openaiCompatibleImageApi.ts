@@ -1034,6 +1034,7 @@ async function callResponsesImageApiSingle(opts: CallApiOptions, profile: ApiPro
       tool_choice: 'required',
     }
     if (profile.reasoningEffort) body.reasoning = { effort: profile.reasoningEffort }
+    if (profile.codexCli) body.store = false
     if (profile.streamImages) {
       body.stream = true
     }
