@@ -46,6 +46,20 @@ describe('validateApiProfile', () => {
       apiProxy: true,
     }))).toBe('缺少 API URL')
   })
+
+  it('rejects malformed API URLs before sending a request', () => {
+    expect(validateApiProfile(createDefaultOpenAIProfile({
+      baseUrl: 'https://',
+      apiKey: 'test-key',
+    }))).toBe('API URL 格式无效，请填写 http(s) 地址或同源相对路径')
+  })
+
+  it('allows relative API URLs for same-origin deployments', () => {
+    expect(validateApiProfile(createDefaultOpenAIProfile({
+      baseUrl: '/api-proxy',
+      apiKey: 'test-key',
+    }))).toBeNull()
+  })
 })
 
 describe('normalizeApiProfile', () => {

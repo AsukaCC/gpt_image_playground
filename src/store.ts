@@ -1253,7 +1253,7 @@ function getApiRequestNetworkErrorHint(
   err: unknown,
   createdAt: number,
   usesApiProxy: boolean,
-  profile?: Pick<ApiProfile, 'provider' | 'apiMode' | 'streamImages' | 'streamPartialImages'> | null,
+  profile?: Pick<ApiProfile, 'provider' | 'apiMode' | 'streamImages' | 'streamPartialImages' | 'baseUrl'> | null,
 ): string | null {
   if (!isApiRequestNetworkError(err)) return null
 
@@ -1261,7 +1261,11 @@ function getApiRequestNetworkErrorHint(
 
   if (elapsedSeconds <= 15) {
     if (usesApiProxy) {
-      return '提示：请求立即失败，请检查 API 代理服务是否正常运行。'
+      return '提示：请求立即失败，请检查 API 代理服务是否正常运行；本地开发时请确认已启动 Vite 开发服务器并配置 dev-proxy.config.json。'
+    }
+    const baseUrl = profile?.baseUrl?.trim() ?? ''
+    if (typeof location !== 'undefined' && location.protocol === 'https:' && /^http:\/\//i.test(baseUrl)) {
+      return '提示：当前页面通过 HTTPS 打开，但 API URL 使用 HTTP，浏览器会因混合内容策略直接拦截请求。请改用 HTTPS API 地址，或使用 API 代理转发。'
     }
     const unsupportedApiHint = profile?.provider === 'openai'
       ? `\n· API 不支持 ${getApiModeApiName(profile.apiMode)}`
@@ -3692,6 +3696,7 @@ async function executeTask(taskId: string) {
       const hintProfile = profile ?? {
         provider: latestTask.apiProvider ?? activeProfile.provider,
         apiMode: settings.apiMode,
+        baseUrl: activeProfile.baseUrl,
         streamImages: activeProfile.streamImages,
         streamPartialImages: activeProfile.streamPartialImages,
       }

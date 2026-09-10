@@ -867,9 +867,22 @@ export function getActiveApiProfile(settings: Partial<AppSettings> | unknown): A
 export function validateApiProfile(profile: ApiProfile): string | null {
   if (!profile.name.trim()) return '缺少名称'
   if (profile.provider !== 'fal' && !profile.baseUrl.trim() && !shouldUseApiProxy(profile.apiProxy)) return '缺少 API URL'
+  if (profile.baseUrl.trim() && !isValidApiBaseUrl(profile.baseUrl)) return 'API URL 格式无效，请填写 http(s) 地址或同源相对路径'
   if (!profile.apiKey.trim()) return '缺少 API Key'
   if (!profile.model.trim()) return '缺少模型 ID'
   return null
+}
+
+function isValidApiBaseUrl(value: string): boolean {
+  const trimmed = value.trim()
+  if (trimmed.startsWith('/')) return true
+
+  try {
+    const parsed = new URL(/^[a-z][a-z\d+.-]*:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`)
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+  } catch {
+    return false
+  }
 }
 
 function isDefaultOpenAIProfile(profile: ApiProfile): boolean {
