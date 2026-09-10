@@ -443,6 +443,15 @@ cp dev-proxy.config.example.json dev-proxy.config.json
 
 修改 `dev-proxy.config.json`，将 `target` 设置为真实的完整 API 基础地址。代理不会自动补 `/v1`，OpenAI 兼容接口通常必须填写到版本前缀，如 `https://api.example.com/v1`。重启开发服务器后，在页面设置中开启 **API 代理** 即可（请求将被转发如 `http://localhost:5173/api-proxy/... -> target/...`）。此功能仅在 `npm run dev` 阶段生效，不会影响打包产物。
 
+如果希望本地代理始终自动启用，可在 `.env.local` 中加入：
+
+```dotenv
+VITE_API_PROXY_AVAILABLE=true
+VITE_API_PROXY_LOCKED=true
+```
+
+锁定后，页面设置会显示“部署端已锁定代理开启”，API URL 只用于记录配置，实际请求会统一发往同源的 `/api-proxy/` 路径。
+
 **4. 本地故障模拟 API (可选)**
 
 如果需要复现图片 URL 跨域、接口返回结构异常、原始响应查看等问题，可启动内置模拟服务：
