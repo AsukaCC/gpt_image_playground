@@ -3,9 +3,15 @@ import { DEFAULT_PARAMS } from '../types'
 import { createDefaultOpenAIProfile, DEFAULT_IMAGES_MODEL, DEFAULT_SETTINGS } from './apiProfiles'
 import { normalizePersistedState } from './persistedState'
 import { callImageApi } from './api'
-import { maybeAppendStreamingHint } from './imageApiShared'
+import { appendUpstreamCapacityHint, maybeAppendStreamingHint } from './imageApiShared'
 
 describe('API error hints', () => {
+  it('explains upstream capacity shedding from Sub2API', () => {
+    const message = 'Our servers are currently overloaded. Please try again later.'
+
+    expect(appendUpstreamCapacityHint(message)).toContain('Sub2API 已成功收到请求')
+  })
+
   it.each([false, true])('uses the transparent background hint when streaming is %s', (streamImages) => {
     const message = 'Transparent background is not supported for this model.'
 

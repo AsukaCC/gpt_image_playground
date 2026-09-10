@@ -49,7 +49,7 @@ import { callAgentConversationTitleApi, callAgentResponsesApi, callBatchImageSin
 import { buildAgentApiInput, buildAgentContinuationInput } from './lib/agentInputBuilder'
 import { collectAgentRoundOutputImageSlots, extractAgentReferenceIds, getAgentCurrentReferenceId, getAgentGeneratedImageReferenceId } from './lib/agentImageReferences'
 import { showBrowserNotification } from './lib/browserNotification'
-import { IMAGE_FETCH_CORS_HINT } from './lib/imageApiShared'
+import { appendUpstreamCapacityHint, IMAGE_FETCH_CORS_HINT } from './lib/imageApiShared'
 import { getFalErrorMessage, getFalQueuedImageResult } from './lib/falAiImageApi'
 import { getCustomQueuedImageResult } from './lib/openaiCompatibleImageApi'
 import { validateMaskMatchesImage } from './lib/canvasImage'
@@ -3446,7 +3446,7 @@ async function executeAgentRound(
 
     if (isAgentRecoveryPauseError(err)) return
 
-    let message = err instanceof Error ? err.message : String(err)
+    let message = appendUpstreamCapacityHint(err instanceof Error ? err.message : String(err))
     const usesApiProxy = activeProfile.apiProxy ?? requestSettings.apiProxy
     const networkErrorHint = getApiRequestNetworkErrorHint(err, startedAt, usesApiProxy, activeProfile)
     if (networkErrorHint && !message.includes(IMAGE_FETCH_CORS_HINT)) {
@@ -3688,7 +3688,7 @@ async function executeTask(taskId: string) {
       })
       scheduleCustomRecovery(taskId)
     } else {
-      let errorMessage = err instanceof Error ? err.message : String(err)
+      let errorMessage = appendUpstreamCapacityHint(err instanceof Error ? err.message : String(err))
       const settings = useStore.getState().settings
       const profile = getTaskApiProfile(settings, latestTask)
       const usesApiProxy = profile?.apiProxy ?? settings.apiProxy

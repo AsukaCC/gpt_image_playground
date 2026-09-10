@@ -109,6 +109,13 @@ export const IMAGE_FETCH_CORS_HINT = ' 可点链接按钮复制结果链接，�
 export const STREAMING_UNSUPPORTED_HINT = '提示：当前使用的 API 可能不支持流式传输，请尝试关闭「流式传输」功能。'
 export const STREAMING_FORMAT_HINT = '提示：API 返回了无法解析的流式数据格式，请尝试关闭「流式传输」功能。'
 export const TRANSPARENT_BACKGROUND_UNSUPPORTED_HINT = '提示：当前使用的 API 不支持为该模型使用原生透明背景，请将「透明背景实现方式」切换为「本地后处理」。'
+export const UPSTREAM_CAPACITY_HINT = '提示：Sub2API 已成功收到请求，但当前上游账号或模型容量不足。请在 Sub2API 中检查可用账号、分组和模型额度，或稍后重试。'
+
+export function appendUpstreamCapacityHint(message: string): string {
+  if (!/server_is_overloaded|slow_down|our servers are currently overloaded|upstream service overloaded/i.test(message)) return message
+  if (message.includes(UPSTREAM_CAPACITY_HINT)) return message
+  return `${message}\n${UPSTREAM_CAPACITY_HINT}`
+}
 
 export function appendStreamingUnsupportedHint(message: string): string {
   return message ? `${message}\n${STREAMING_UNSUPPORTED_HINT}` : STREAMING_UNSUPPORTED_HINT

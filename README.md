@@ -273,6 +273,18 @@ Sub2API 的 Codex 配置使用 OpenAI Responses API。此项目已经兼容该�
 
 开启 Codex CLI 兼容模式后，Responses 请求会按 Sub2API/Codex 的约定发送，并关闭响应存储（`store: false`）。图片请求使用 `POST /v1/responses` 和 `image_generation` 工具；不要把 Codex 配置中的 `wire_api = "responses"` 改成 Images API。
 
+如果页面显示 `Our servers are currently overloaded. Please try again later.`，说明请求已经到达 Sub2API，失败点在上游账号或模型容量，不是浏览器连接失败。请在 EasySub2api/Sub2API 中检查：
+
+```yaml
+gateway:
+  # API Key 客户端调用 /v1/responses 时建议开启，统一按 Codex 出站身份处理
+  force_codex_cli: true
+  # 保持默认值，不要关闭 Codex 身份校验
+  disable_codex_identity_enforcement: false
+```
+
+同时确认当前分组有可用的 OAuth 账号、账号没有额度或冷却限制、文本模型和图像模型都在该分组允许列表中。`codex_image_generation_bridge_enabled` 只有在网关明确要求由服务端注入图像工具时才需要开启；本项目已经在请求中显式发送 `image_generation` 工具。若账号池确实耗尽，前端重试无法绕过容量限制，需要补充可用账号、切换分组/模型或等待上游恢复。
+
 #### 解决 GitHub Pages 的 `OPTIONS 403`
 
 GitHub Pages 是静态站点，浏览器会先向 Sub2API 发送 CORS 预检请求。Sub2API 默认拒绝未配置的来源，因此必须在 Sub2API 的 `config.yaml` 中加入 GitHub Pages 的 **Origin**：
